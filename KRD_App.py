@@ -1146,13 +1146,15 @@ def RXNF():
 # function to reset sheet if user inputs wrong values
 def reset2():
     RXNEQ.destroy()
-    RXNAI.destroy()
+    if RXNAICHECK == 1:
+        RXNAI.destroy()
     RXNF()
 def reset3():
     RXNAI.destroy()
     additionalinputs()
 def additionalinputs():
     global RXNAI,TEMPCHANGETYPE,HRTinp,CTEinp,CTCPEinp,NMinp,MFRinp,COinp,MPinp,Hvals,Cpvals,CFREinp,COOLANTUAEinp,CONVWANT1
+    RXNAICHECK == 1
     RXNAI = Toplevel(main)
     RXNAI.geometry('1300x900')
     TEMPCHANGETYPE = [IVADIABATIC.get(), IVCOCURRENT.get(), IVCOUNTCURRENT.get()]
@@ -1774,6 +1776,7 @@ locIT = []
 locPT = []
 MRlets = []
 MRKK = []
+RXNAICHECK = 0
 
 
 
