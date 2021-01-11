@@ -538,9 +538,9 @@ def PFR(f, VOLUME):
         c = [0 for col in range(4)]
         for i in range(len(lets)):
             if int(REN) == 1:
-                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * (TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION)
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
             else:
-                c[i] = CTO * (F[0][i] / FTO) * (TINITIAL / TEMPERATURE) * DIMPRESS
+                c[i] = CTO * (F[0][i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
         SUMCP = sumCP
         DCP = dCp
 
@@ -742,9 +742,9 @@ def MR(f, VOLUME):
         c = [0 for col in range(4)]
         for i in range(len(lets)):
             if int(REN) == 1:
-                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * (TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION)
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
             else:
-                c[i] = CTO * (F[0][i] / FTO) * (TINITIAL / TEMPERATURE) * DIMPRESS
+                c[i] = CTO * (F[0][i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
         SUMCP = sumCP
         DCP = dCp
 
@@ -943,9 +943,9 @@ def PBR(f, WEIGHT):
         c = [0 for col in range(4)]
         for i in range(len(lets)):
             if int(REN) == 1:
-                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * (TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION)
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
             else:
-                c[i] = CTO *(F[0][i]/FTO) * (TINITIAL / TEMPERATURE) * DIMPRESS
+                c[i] = CTO *(F[0][i]/FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
         SUMCP = sumCP
         DCP = dCp
 
