@@ -276,6 +276,8 @@ def CSTR():
     Trange = np.linspace(T0, (T0 + 250), 1000)
     if int(Vo.get()) > 0:
         VO = float(Vo.get())
+    else:
+        VO = 0
     if MFRval[0] > 0:
         # initial flow rates
         F = [MFRval]
@@ -451,32 +453,32 @@ def PFR(f, VOLUME):
         IMPHOLDFIRST = '01001101 01100001 01110100 01110100 01101000 01100101 01110111'
         IMHOLDLAST = '01000010 01110101 01110011 01110011 01101001 01100101 01110010 01100101'
     R1 = [0 for row in range(len(lets))]
+    FTO = 0
+    CTO = 0
     if TMFRval[0] > 0:
         FTO = TMFRval[0]
-    if MFRval[0] >0:
-        #establishes initial flow rates value to use in theta calculation.
+    if MFRval[0] > 0:
+        # establishes initial flow rates value to use in theta calculation.
         F = [MFRval for row in range(int(REN))]
         FTO = sum(F[0])
-        if VO > 0:
-            CTO = FTO/VO
-        if MtypeTT == 'Gas' and CTOval[0] == 0:
-            #If material type is gas need to give student ability to input an R value for calculating this
-            CTO = INPUTPRESSURE/(float(CTO_R[0])*TINITIAL)
-        YAO = F[0][0] / FTO
-        CAO = CTO * YAO
     if CTOval[0] > 0:
         CTO = CTOval[0]
-        if FTO == 0 and VO > 0 :
-            FTO = CTO*VO
-        YAO = F[0][0] / FTO
-        CAO = COval[0]
     if COval[0] > 0:
         CTO = sum(COval)
-        #Get initial flow rates based off of concentrations of initial flow inputs
-        F = [[element * int(VO) for element in COval]]
-        FTO = sum(F)
-        YAO = F[0][0] / FTO
-        CAO = COval[0]
+    if CTO == 0:
+        if INPUTPRESSURE > 0 and MtypeT.get() == 'Gas':
+            CTO = INPUTPRESSURE / (float(CTO_R[0]) * TINITIAL)
+        if FTO > 0 and VO > 0:
+            CTO = FTO / float(VO)
+
+    if FTO == 0:
+        if CTO > 0 and VO > 0:
+            FTO = CTO * VO
+        if COval[0] > 0 and VO > 0:
+            F = [[element * int(VO) for element in COval]]
+    locPFR1 = lets.index(CWR2[0])
+    YAO = F[0][locPFR1] / FTO
+    CAO = YAO * CTO
 
     #FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
     EPSILON = [0 for row in range(int(REN))]
@@ -499,7 +501,7 @@ def PFR(f, VOLUME):
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    locPFR1 = lets.index(CWR2[0])
+
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
@@ -655,32 +657,32 @@ def MR(f, VOLUME):
         IMPHOLDFIRST = '01001101 01100001 01110100 01110100 01101000 01100101 01110111'
         IMHOLDLAST = '01000010 01110101 01110011 01110011 01101001 01100101 01110010 01100101'
     R1 = [0 for row in range(len(lets))]
+    FTO = 0
+    CTO = 0
     if TMFRval[0] > 0:
         FTO = TMFRval[0]
     if MFRval[0] > 0:
         # establishes initial flow rates value to use in theta calculation.
         F = [MFRval for row in range(int(REN))]
         FTO = sum(F[0])
-        if VO > 0:
-            CTO = FTO / VO
-        if MtypeTT == 'Gas' and CTOval[0] == 0:
-            # If material type is gas need to give student ability to input an R value for calculating this
-            CTO = INPUTPRESSURE / (float(CTO_R[0]) * TINITIAL)
-        YAO = F[0][0] / FTO
-        CAO = CTO * YAO
     if CTOval[0] > 0:
         CTO = CTOval[0]
-        if FTO == 0 and VO > 0:
-            FTO = CTO * VO
-        YAO = F[0][0] / FTO
-        CAO = COval[0]
     if COval[0] > 0:
         CTO = sum(COval)
-        # Get initial flow rates based off of concentrations of initial flow inputs
-        F = [[element * int(VO) for element in COval]]
-        FTO = sum(F)
-        YAO = F[0][0] / FTO
-        CAO = COval[0]
+    if CTO == 0:
+        if INPUTPRESSURE > 0 and MtypeT.get() == 'Gas':
+            CTO = INPUTPRESSURE / (float(CTO_R[0]) * TINITIAL)
+        if FTO > 0 and VO > 0:
+            CTO = FTO / float(VO)
+
+    if FTO == 0:
+        if CTO > 0 and VO > 0:
+            FTO = CTO * VO
+        if COval[0] > 0 and VO > 0:
+            F = [[element * int(VO) for element in COval]]
+    locMR1 = lets.index(CWR2[0])
+    YAO = F[0][locMR1] / FTO
+    CAO = YAO * CTO
 
     # FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
     EPSILON = [0 for row in range(int(REN))]
@@ -703,7 +705,7 @@ def MR(f, VOLUME):
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    locMR1 = lets.index(CWR2[0])
+
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
@@ -855,32 +857,32 @@ def PBR(f, WEIGHT):
     TCOOLCHANGING = float(f[len(f) - 1])
     DIMPRESS = float(f[len(f) - 3])
     R1 = [0 for row in range(len(lets))]
+    FTO = 0
+    CTO = 0
     if TMFRval[0] > 0:
         FTO = TMFRval[0]
     if MFRval[0] > 0:
         # establishes initial flow rates value to use in theta calculation.
         F = [MFRval for row in range(int(REN))]
         FTO = sum(F[0])
-        if CTOval[0] ==0:
-            # If material type is gas need to give student ability to input an R value for calculating this
-            CTO = INPUTPRESSURE / (float(CTO_R[0]) * TINITIAL)
-        else:
-            CTO = CTOval[0]
-        YAO = F[0][0] / FTO
-        CAO = CTO * YAO
-    if CTOval[0] > 0:
+    if CTOval[0] >0:
         CTO = CTOval[0]
-        if FTO == 0 and VO > 0:
-            FTO = CTO * VO
-        YAO = F[0][0] / FTO
-        CAO = YAO*CTO
     if COval[0] > 0:
         CTO = sum(COval)
-        # Get initial flow rates based off of concentrations of initial flow inputs
-        F = [[element * int(VO) for element in COval]]
-        FTO = sum(F)
-        YAO = F[0][0] / FTO
-        CAO = COval[0]
+    if CTO == 0:
+        if INPUTPRESSURE > 0 and MtypeT.get() == 'Gas':
+            CTO = INPUTPRESSURE / (float(CTO_R[0]) * TINITIAL)
+        if FTO > 0 and VO > 0:
+            CTO = FTO/float(VO)
+
+    if FTO == 0:
+        if CTO > 0 and VO >0:
+            FTO = CTO * VO
+        if COval[0]>0 and VO > 0:
+            F = [[element * int(VO) for element in COval]]
+    locPBR1 = lets.index(CWR2[0])
+    YAO = F[0][locPBR1] / FTO
+    CAO = YAO*CTO
 
     # FOR ADIABATIC REACTORS NEED EPSILON VALUE WHICH IS THE COEFFICIENCTS OF THE PRODUCTS SUMMED - CF OF REACTANTS * YAO
     # IF GAS IS THE MATERIAL PHASE
@@ -904,7 +906,7 @@ def PBR(f, WEIGHT):
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    locPBR1 = lets.index(CWR2[0])
+
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
@@ -1325,7 +1327,7 @@ def RXNGen():
     TMFRinp = []
     CTOinp = []
     INRTinp = []
-    if IVTT[4] == 0 and MtypeT.get() == 'Gas':
+    if IVTT[4] == 0 and MtypeT.get() == 'Gas' and float(P.get()) > 0:
         labCTOR = Label(RXNEQ, text='R for CTO calculation')
         labCTOR.pack()
         labCTOR.place(x=1000, y=75)
@@ -1623,6 +1625,8 @@ def cont():
         WEIGHT = np.linspace(0, int(V.get()),10000)
     if float(Vo.get()) > 0:
         VO = float(Vo.get())
+    else:
+        VO = float(0)
     # if float(Time.get()) >= 0:
     # v = np.linspace(0,int(Time.get()),10000)
     RXNEQ.wm_state('iconic')
@@ -1647,14 +1651,15 @@ def cont1():
         MFRval = [0 for col in range(len(lets))]
     if IVTT[3] == 1:
         COval = [float(op.get()) for op in COinp]
-        if int(REN) >1:
-            for i in range(len(lets)):
-                init.append(COval[i]*VO)
-        elif int(REN) == 1:
-            init.append(0)
+        if IVTT[1] == 0:
+            if int(REN) >1:
+                for i in range(len(lets)):
+                    init.append(COval[i]*VO)
+            elif int(REN) == 1:
+                init.append(0)
     else:
         COval = [0 for col in range(len(lets))]
-    if IVTT[5] == 1:
+    if IVTT[5] == 1 and IVTT[2] == 1:
         MPval = [float(op.get()) for op in MPinp]
         MFRval = [element*TMFRval[0] for element in MPval]
         if int(REN) >1:
