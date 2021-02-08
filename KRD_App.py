@@ -485,6 +485,7 @@ def PFR(f, VOLUME):
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
+    FO = F
     if int(REN) > 1:
         F = f[0:len(lets)]
     #FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
@@ -497,7 +498,7 @@ def PFR(f, VOLUME):
     for i in range(len(F)):
         THETA = [0 for col in range(len(lets))]
     if int(REN) > 1:
-        CALCCONVERSION = (F[locPFR1] - f[locPFR1]) / F[locPFR1]
+        CALCCONVERSION = (FO[locPFR1] - f[locPFR1]) / FO[locPFR1]
     elif int(REN) == 1:
         CALCCONVERSION = float(f[0])
         for j in range(len(NU[0])):
@@ -539,7 +540,7 @@ def PFR(f, VOLUME):
         if int(REN) == 1:
             c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
         else:
-            c[i] = CTO * (F[i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            c[i] = CTO * (F[i] / ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
 
 
 
@@ -686,6 +687,7 @@ def MR(f, VOLUME):
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
+    FO = F
     if int(REN) > 1:
         F = f[0:len(lets)]
     # FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
@@ -701,7 +703,7 @@ def MR(f, VOLUME):
     for i in range(len(F)):
         THETA = [0 for col in range(len(lets))]
     if int(REN) > 1:
-        CALCCONVERSION = float((F[locMR1] - f[locMR1]) / F[locMR1])
+        CALCCONVERSION = float((FO[locMR1] - f[locMR1]) / FO[locMR1])
     elif int(REN) == 1:
         CALCCONVERSION = float(f[0])
         for j in range(len(NU[0])):
@@ -740,7 +742,7 @@ def MR(f, VOLUME):
         if int(REN) == 1:
             c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
         else:
-            c[i] = CTO * (F[i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            c[i] = CTO * (F[i] / ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
 
     KVAL = [0 for row in range(int(REN))]
     KCVAL = [0 for row in range(int(REN))]
@@ -875,6 +877,7 @@ def PBR(f, WEIGHT):
     locPBR1 = lets.index(CWR2[0])
     YAO = F[locPBR1] / FTO
     CAO = YAO*CTO
+    FO = F
     if int(REN) > 1:
         F = f[0:len(lets)]
     NU = [[] for row in range(int(REN))]
@@ -899,7 +902,7 @@ def PBR(f, WEIGHT):
     for i in range(len(F)):
         THETA = [0 for col in range(len(lets))]
     if int(REN) > 1:
-        CALCCONVERSION = float((F[locPBR1] - f[locPBR1]) / F[locPBR1])
+        CALCCONVERSION = float((FO[locPBR1] - f[locPBR1]) / FO[locPBR1])
     elif int(REN) == 1:
         CALCCONVERSION = float(f[0])
         for j in range(len(NU[0])):
@@ -937,7 +940,7 @@ def PBR(f, WEIGHT):
         if int(REN) == 1:
             c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
         else:
-            c[i] = CTO * (F[i]/FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            c[i] = CTO * (F[i]/ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
 
     KVAL = [0 for row in range(int(REN))]
     KCVAL = [0 for row in range(int(REN))]
