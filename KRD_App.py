@@ -203,7 +203,7 @@ def calctime():
         elif int(REN) >1:
             XXCONV = [0.0 for row in range(len(Vrange))]
             for i in range(len(Vrange)):
-                XXCONV[i] = (F[locCSTR1]-F1F[i][0])/F[locCSTR1]
+                XXCONV[i] = (F[0][locCSTR1]-F1F[i][0])/F[0][locCSTR1]
             while CSTRTEST == FALSE:
                 if CSTRX.get() ==1:
                     if Vrange[ICSTR] <= float(V.get()) + tol and Vrange[ICSTR] >= float(V.get()) - tol:
@@ -280,9 +280,9 @@ def CSTR():
         VO = 0
     if MFRval[0] > 0:
         # initial flow rates
-        F = MFRval
+        F = [MFRval]
         # make the Flow rates vector have 0s for the products
-        for i in range(int(REN)):
+        for i in range(len(REN)):
             if len(F[i]) != len(CFAA[i]):
                 # this will only append correctly for a single reaction problem
                 for j in range(CFPP[i]):
@@ -296,16 +296,16 @@ def CSTR():
     if COval[0] > 0:
         CTO = sum(COval)
         c = COval
-        F = []
+        F = [[]]
 
         for j in range(len(c)):
-            F.append(c[j] * VO)
+            F[0].append(c[j] * VO)
     # create theta vector of 0s
     for i in range(len(F)):
-        THETA = [[0 for col in range(len(lets))] for row in range(int(REN))]
+        THETA = [[0 for col in range(len(lets))] for row in range(len(REN))]
     # create nu matrix anticipating multi reaction, will work for single reaction still
-    NU = [[] for row in range(int(REN))]
-    for k in range(int(REN)):
+    NU = [[] for row in range(len(REN))]
+    for k in range(len(REN)):
         for i in range(len(CFIT[k])):
             NU[k].append(-1 * CFIT[k][i])
         for j in range(len(CFPT[k])):
@@ -313,14 +313,15 @@ def CSTR():
     # create dCp list, will have potential for multi reaction problems
     if int(REN) == 1:
         # use location of component reaction depends on to create theta values for each component
-        for j in range(len(NU[0])):
-            THETA[j] = F[j] / F[locCSTR1]
+        for i in range(len(REN)):
+            for j in range(len(NU[i])):
+                THETA[i][j] = F[i][j] / F[i][locCSTR1]
         dCp = []
         locCSTR2 = []
         sumCP = []
         if HxcT.get() == 'Yes':
-            for i in range(int(REN)):
-                if len(dCp) != int(REN):
+            for i in range(len(REN)):
+                if len(dCp) != len(REN):
                     dCp.append([0])
                     locCSTR2.append([0 for col in range(len(NU[i]))])
                     sumCP.append([0])
@@ -330,11 +331,11 @@ def CSTR():
                     sumCP[i][0] = sumCP[i][0] + THETA[i][j] * cp[locCSTR2[i][j]]
                     if IVTT[7] != 1:
                         dHval[i] = dHval[i] + NU[i][j] * H[locCSTR2[i][j]]
-        K = [[0 for col in range(len(Trange))] for row in range(int(REN))]
-        kc = [[0 for col in range(len(Trange))] for row in range(int(REN))]
+        K = [[0 for col in range(len(Trange))] for row in range(len(REN))]
+        kc = [[0 for col in range(len(Trange))] for row in range(len(REN))]
         XCSTR = [0 for col in range(len(Trange))]
         vol = [0 for col in range(len(Trange))]
-        for i in range(int(REN)):
+        for i in range(len(REN)):
             for j in range(len(Trange)):
                 conv12 = 1
                 conv12R = 1
@@ -356,7 +357,7 @@ def CSTR():
                         for l in range(k + 1, len(NU[i])):
                             convER = convER * ((c[locCSTR1] * (NU[i][l] * XCSTR[i])) ** (CFAA[i][l]))
                 volden = conv12 * convE - (1 / kc[i][j]) * ((conv12R ** (RXNTEG == '<-->')) * (convER ** (RXNTEG == '<-->'))) * (RXNTEG == '<-->')
-                vol[j] = (XCSTR[j] * F[locCSTR1]) / (K[i][j] * volden)
+                vol[j] = (XCSTR[j] * F[0][locCSTR1]) / (K[i][j] * volden)
         return [vol, XCSTR, Trange]
     if int(REN) > 1:
         def MULTIRXCSTR(C):
@@ -424,7 +425,7 @@ def CSTR():
                     for z in range(len(CCPP[x])):
                         R1[w] = R1[w] + (CFPT[x][z]) * (R[x]) * (lets[w] == CCPP[x][z])
                 #generate flow out vector F_o = VO*c
-                FF1[w] = (F[w]) - VO*C[w] + R1[w]*Vrange[zz]
+                FF1[w] = (F[0][w]) - VO*C[w] + R1[w]*Vrange[zz]
             return FF1
         x0 = [0 for col in range(len(lets))]
         F1 = [[] for row in range(len(Vrange))]
@@ -458,8 +459,8 @@ def PFR(f, VOLUME):
         FTO = TMFRval[0]
     if MFRval[0] > 0:
         # establishes initial flow rates value to use in theta calculation.
-        F = MFRval
-        FTO = sum(F)
+        F = [MFRval for row in range(int(REN))]
+        FTO = sum(F[0])
     if CTOval[0] > 0:
         CTO = CTOval[0]
     if COval[0] > 0:
@@ -474,56 +475,59 @@ def PFR(f, VOLUME):
         if CTO > 0 and VO > 0:
             FTO = CTO * VO
         if COval[0] > 0 and VO > 0:
-            F = [element * int(VO) for element in COval]
+            F = [[element * int(VO) for element in COval]]
     locPFR1 = lets.index(CWR2[0])
-    YAO = F[locPFR1] / FTO
+    YAO = F[0][locPFR1] / FTO
     CAO = YAO * CTO
-    NU = [[] for row in range(int(REN))]
-    for k in range(int(REN)):
+    volflowinit = FTO / CTO
+    #FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
+    EPSILON = [0 for row in range(int(REN))]
+    for i in range(int(REN)):
+        EPSILON[i] = (sum(CFPPP[i])-sum(CFIII[i]))*YAO
+    if int(REN) > 1:
+        c = [0 for row in range(len(lets))]
+        ft = 0
+        for i in range(len(lets)):
+            ft = ft + float(f[i])
+        for i in range(len(lets)):
+            c[i] = CTO * float(f[i]) * DIMPRESS / ft
+    for i in range(len(F)):
+        THETA = [[0 for col in range(len(lets))] for row in range(len(REN))]
+    # create nu matrix anticipating multi reaction, will work for single reaction still
+    NU = [[] for row in range(len(REN))]
+    for k in range(len(REN)):
         for i in range(len(CFIT[k])):
             NU[k].append(-1 * CFIT[k][i])
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    FO = F
-    if int(REN) > 1:
-        F = f[0:len(lets)]
-    #FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
-    EPSILON = [0 for row in range(int(REN))]
-    for i in range(int(REN)):
-        EPSILON[i] = (sum(CFPPP[i])-sum(CFIII[i]))*YAO
-    ft = 0
-    for i in range(len(lets)):
-        ft = ft + float(F[i])
-    for i in range(len(F)):
-        THETA = [0 for col in range(len(lets))]
-    if int(REN) > 1:
-        CALCCONVERSION = (FO[locPFR1] - f[locPFR1]) / FO[locPFR1]
-    elif int(REN) == 1:
-        CALCCONVERSION = float(f[0])
-        for j in range(len(NU[0])):
-            THETA[j] = F[j] / F[locPFR1]
-        THETAHOLD = THETA
-    TEMPERATURE = Temp[0]
 
+
+    TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
-
+        if int(REN) > 1:
+            CALCCONVERSION = float((F[0][locPFR1] - f[locPFR1]) / F[0][locPFR1])
+        elif int(REN) == 1:
+            CALCCONVERSION = float(f[0])
         # use location of component reaction depends on to create theta values for each component
-
+        for i in range(len(REN)):
+            for j in range(len(NU[i])):
+                THETA[i][j] = F[i][j] / F[i][locPFR1]
+        THETAHOLD = THETA[0]
         # create dCp list, will have potential for multi reaction problems
         dCp = []
         locPFR2 = []
         sumCP = []
-        for i in range(int(REN)):
-            if len(dCp) != int(REN):
+        for i in range(len(REN)):
+            if len(dCp) != len(REN):
                 dCp.append([0])
                 locPFR2.append([0 for col in range(len(NU[i]))])
                 sumCP.append([0])
             for j in range(len(NU[i])):
                 locPFR2[i][j] = lets.index(CCAA[i][j])
                 dCp[i][0] = dCp[i][0] + NU[i][j] * cp[locPFR2[i][j]]
-                sumCP[i][0] = sumCP[i][0] + THETA[j] * cp[locPFR2[i][j]]
+                sumCP[i][0] = sumCP[i][0] + THETA[i][j] * cp[locPFR2[i][j]]
                 if IVTT[7] != 1:
                     dHval[i] = dHval[i] + NU[i][j] * H[locPFR2[i][j]]
         # TEMPERATURE EQUATIONS FOR USE IN CALCULATION FURTHER DOWN
@@ -532,16 +536,21 @@ def PFR(f, VOLUME):
         if TEMPCHANGETYPE[1] == 1 or TEMPCHANGETYPE[2] == 1:
             TEMPERATURE = TCHANGING
             TEMPERATURECOOLANT = TCOOLCHANGING
+        # if system has changing temperature use this method of calculating the concentration vector
+        c = [0 for col in range(len(lets))]
+        if MtypeT == 'Gas':
+            volflow = (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(ft/FTO))*(int(REN)>1) + (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(1+EPSILON[0]*f(1)))*(int(REN) == 1)
+        else:
+            volflow = volflowinit
+        sumflowcp = 0
+        for i in range(len(lets)):
+            if int(REN) == 1:
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
+            else:
+                c[i] = CTO * (F[0][i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            sumflowcp = sumflowcp + c[i] * volflow * cp[i]
         SUMCP = sumCP
         DCP = dCp
-        # if system has changing temperature use this method of calculating the concentration vector
-    c = [0 for col in range(len(lets))]
-    for i in range(len(lets)):
-        if int(REN) == 1:
-            c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
-        else:
-            c[i] = CTO * (F[i] / ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
-
 
 
 
@@ -610,15 +619,23 @@ def PFR(f, VOLUME):
         dy = 0
     R2 = [0] * 4
     if HxcT.get() == 'Yes':
+        if int(REN) > 1:
+            delhmulr = 0
+            for numr in range(int(REN)):
+                delhmulr = delhmulr + (R[numr] * dHval[numr])
+        else:
+            delhmulr = 0
         if int(REN) == 1:
-            R2[0] = -R1[0]/F[0]
+            R2[0] = -R1[0]/F[0][0]
             dT = 0
             dTa = 0
         if TEMPCHANGETYPE[1] == 1:
-            dT = (R[locPFR1]*dHval[0]-UA*(TEMPERATURE-TEMPERATURECOOLANT))/(F[locPFR1]*(sumCP[0][0]+dCp[0][0]*CALCCONVERSION))
+            dT = ((R1[locPFR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locPFR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))) * (int(REN) == 1) +\
+                  ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp) * (int(REN) > 1)
             dTa = UA*(TEMPERATURE-TEMPERATURECOOLANT)/(FLOWCOOLANT*CPCOOLANT)
         if TEMPCHANGETYPE[2] == 1:
-            dT = (R[locPFR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[locPFR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))
+            dT = ((R1[locPFR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locPFR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))) * (int(REN) == 1) +\
+                  ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp) * (int(REN) > 1)
             dTa = UA * (TEMPERATURECOOLANT - TEMPERATURE) / (FLOWCOOLANT * CPCOOLANT)
     else:
         dT = 0
@@ -660,8 +677,8 @@ def MR(f, VOLUME):
         FTO = TMFRval[0]
     if MFRval[0] > 0:
         # establishes initial flow rates value to use in theta calculation.
-        F = MFRval
-        FTO = sum(F)
+        F = [MFRval for row in range(int(REN))]
+        FTO = sum(F[0])
     if CTOval[0] > 0:
         CTO = CTOval[0]
     if COval[0] > 0:
@@ -676,56 +693,59 @@ def MR(f, VOLUME):
         if CTO > 0 and VO > 0:
             FTO = CTO * VO
         if COval[0] > 0 and VO > 0:
-            F = [element * int(VO) for element in COval]
+            F = [[element * int(VO) for element in COval]]
     locMR1 = lets.index(CWR2[0])
-    YAO = F[locMR1] / FTO
+    YAO = F[0][locMR1] / FTO
     CAO = YAO * CTO
-    NU = [[] for row in range(int(REN))]
-    for k in range(int(REN)):
+    volflowinit = FTO / CTO
+    # FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
+    EPSILON = [0 for row in range(int(REN))]
+    for i in range(int(REN)):
+        EPSILON[i] = (sum(CFPPP[i]) - sum(CFIII[i])) * YAO
+    if int(REN) > 1:
+        c = [0 for row in range(len(lets))]
+        ft = 0
+        for i in range(len(lets)):
+            ft = ft + float(f[i])
+        for i in range(len(lets)):
+            c[i] = CTO * float(f[i]) * DIMPRESS / ft
+    for i in range(len(F)):
+        THETA = [[0 for col in range(len(lets))] for row in range(len(REN))]
+    # create nu matrix anticipating multi reaction, will work for single reaction still
+    NU = [[] for row in range(len(REN))]
+    for k in range(len(REN)):
         for i in range(len(CFIT[k])):
             NU[k].append(-1 * CFIT[k][i])
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    FO = F
-    if int(REN) > 1:
-        F = f[0:len(lets)]
-    # FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
-    EPSILON = [0 for row in range(int(REN))]
-    for i in range(int(REN)):
-        EPSILON[i] = (sum(CFPPP[i]) - sum(CFIII[i])) * YAO
-    c = [0 for row in range(len(lets))]
-    ft = 0
-    for i in range(len(lets)):
-        ft = ft + float(F[i])
-    for i in range(len(lets)):
-        c[i] = CTO * float(F[i]) * (DIMPRESS) ** (MtypeT.get() == 'Gas') / ft
-    for i in range(len(F)):
-        THETA = [0 for col in range(len(lets))]
-    if int(REN) > 1:
-        CALCCONVERSION = float((FO[locMR1] - f[locMR1]) / FO[locMR1])
-    elif int(REN) == 1:
-        CALCCONVERSION = float(f[0])
-        for j in range(len(NU[0])):
-            THETA[j] = F[j] / F[locMR1]
-        THETAHOLD = THETA
+
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
+        if int(REN) > 1:
+            CALCCONVERSION = float((F[0][locMR1] - f[locMR1]) / F[0][locMR1])
+        elif int(REN) == 1:
+            CALCCONVERSION = float(f[0])
+        # use location of component reaction depends on to create theta values for each component
+        for i in range(len(REN)):
+            for j in range(len(NU[i])):
+                THETA[i][j] = F[i][j] / F[i][locMR1]
+        THETAHOLD = THETA[0]
         # create dCp list, will have potential for multi reaction problems
         dCp = []
         locMR2 = []
         sumCP = []
-        for i in range(int(REN)):
-            if len(dCp) != int(REN):
+        for i in range(len(REN)):
+            if len(dCp) != len(REN):
                 dCp.append([0])
                 locMR2.append([0 for col in range(len(NU[i]))])
                 sumCP.append([0])
             for j in range(len(NU[i])):
                 locMR2[i][j] = lets.index(CCAA[i][j])
                 dCp[i][0] = dCp[i][0] + NU[i][j] * cp[locMR2[i][j]]
-                sumCP[i][0] = sumCP[i][0] + THETA[j] * cp[locMR2[i][j]]
+                sumCP[i][0] = sumCP[i][0] + THETA[i][j] * cp[locMR2[i][j]]
                 if IVTT[7] != 1:
                     dHval[i] = dHval[i] + NU[i][j] * H[locMR2[i][j]]
         # TEMPERATURE EQUATIONS FOR USE IN CALCULATION FURTHER DOWN
@@ -734,15 +754,21 @@ def MR(f, VOLUME):
         if TEMPCHANGETYPE[1] == 1 or TEMPCHANGETYPE[2] == 1:
             TEMPERATURE = TCHANGING
             TEMPERATURECOOLANT = TCOOLCHANGING
+        # if system has changing temperature use this method of calculating the concentration vector
+        c = [0 for col in range(len(lets))]
+        if MtypeT == 'Gas':
+            volflow = (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(ft/FTO))*(int(REN)>1) + (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(1+EPSILON[0]*f(1)))*(int(REN) == 1)
+        else:
+            volflow = volflowinit
+        sumflowcp = 0
+        for i in range(len(lets)):
+            if int(REN) == 1:
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
+            else:
+                c[i] = CTO * (F[0][i] / FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            sumflowcp = sumflowcp + c[i] * volflow * cp[i]
         SUMCP = sumCP
         DCP = dCp
-        # if system has changing temperature use this method of calculating the concentration vector
-    c = [0 for col in range(len(lets))]
-    for i in range(len(lets)):
-        if int(REN) == 1:
-            c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
-        else:
-            c[i] = CTO * (F[i] / ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
 
     KVAL = [0 for row in range(int(REN))]
     KCVAL = [0 for row in range(int(REN))]
@@ -812,15 +838,25 @@ def MR(f, VOLUME):
             dy = 0
         R2 = [0] * 4
         if HxcT.get() == 'Yes':
+            if int(REN) > 1:
+                delhmulr = 0
+                for numr in range(int(REN)):
+                    delhmulr = delhmulr + (R[numr] * dHval[numr])
+            else:
+                delhmulr = 0
             if int(REN) == 1:
-                R2[0] = -R1[0] / F[0]
+                R2[0] = -R1[0] / F[0][0]
                 dT = 0
                 dTa = 0
+            # if multireaction, dT = (sum(R*H)-UA(T-Ta))/sum(F*cp) use the number of reactions to determine which to keep to restrict number of lines
             if TEMPCHANGETYPE[1] == 1:
-                dT = (R[locMR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[locMR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))
+                dT = ((R1[locMR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locMR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION)))*(int(REN)==1) +\
+                      ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp)*(int(REN)>1)
                 dTa = UA * (TEMPERATURE - TEMPERATURECOOLANT) / (FLOWCOOLANT * CPCOOLANT)
+
             if TEMPCHANGETYPE[2] == 1:
-                dT = (R[locMR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[locMR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))
+                dT = ((R1[locMR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locMR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))) * (int(REN) == 1) +\
+                      ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp) * (int(REN) > 1)
                 dTa = UA * (TEMPERATURECOOLANT - TEMPERATURE) / (FLOWCOOLANT * CPCOOLANT)
         else:
             dT = 0
@@ -857,8 +893,8 @@ def PBR(f, WEIGHT):
         FTO = TMFRval[0]
     if MFRval[0] > 0:
         # establishes initial flow rates value to use in theta calculation.
-        F = MFRval
-        FTO = sum(F)
+        F = [MFRval for row in range(int(REN))]
+        FTO = sum(F[0])
     if CTOval[0] >0:
         CTO = CTOval[0]
     if COval[0] > 0:
@@ -873,57 +909,61 @@ def PBR(f, WEIGHT):
         if CTO > 0 and VO >0:
             FTO = CTO * VO
         if COval[0]>0 and VO > 0:
-            F = [element * int(VO) for element in COval]
+            F = [[element * int(VO) for element in COval]]
     locPBR1 = lets.index(CWR2[0])
-    YAO = F[locPBR1] / FTO
+    YAO = F[0][locPBR1] / FTO
     CAO = YAO*CTO
-    FO = F
+    volflowinit = FTO/CTO
+
+    # FOR ADIABATIC REACTORS NEED EPSILON VALUE WHICH IS THE COEFFICIENCTS OF THE PRODUCTS SUMMED - CF OF REACTANTS * YAO
+    # IF GAS IS THE MATERIAL PHASE
+    EPSILON = [0 for row in range(int(REN))]
+    for i in range(int(REN)):
+        EPSILON[i] = (sum(CFPPP[i]) - sum(CFIII[i])) * YAO
     if int(REN) > 1:
-        F = f[0:len(lets)]
-    NU = [[] for row in range(int(REN))]
-    for k in range(int(REN)):
+        c = [0 for row in range(len(lets))]
+        ft = 0
+        for i in range(len(lets)):
+            ft = ft + float(f[i])
+        for i in range(len(lets)):
+            c[i] = CTO * float(f[i]) * DIMPRESS / ft
+    for i in range(len(F)):
+        THETA = [[0 for col in range(len(lets))] for row in range(len(REN))]
+    # create nu matrix anticipating multi reaction, will work for single reaction still
+    NU = [[] for row in range(len(REN))]
+    for k in range(len(REN)):
         for i in range(len(CFIT[k])):
             NU[k].append(-1 * CFIT[k][i])
         for j in range(len(CFPT[k])):
             NU[k].append(CFPT[k][j])
     NUHOLD = NU[0]
-    if int(REN) > 1:
-        F = f[0:len(lets)]
-    # FOR SINGLE REACTION EQUATIONS CAN USE EPSILON TO SOLVE STUFF SO JUST CALCULATE IT REGARDLESS OF NUMBER OF REACTIONS
-    EPSILON = [0 for row in range(int(REN))]
-    for i in range(int(REN)):
-        EPSILON[i] = (sum(CFPPP[i]) - sum(CFIII[i])) * YAO
-    c = [0 for row in range(len(lets))]
-    ft = 0
-    for i in range(len(lets)):
-        ft = ft + float(F[i])
-    for i in range(len(lets)):
-        c[i] = CTO * float(F[i]) * (DIMPRESS) ** (MtypeT.get() == 'Gas') / ft
-    for i in range(len(F)):
-        THETA = [0 for col in range(len(lets))]
-    if int(REN) > 1:
-        CALCCONVERSION = float((FO[locPBR1] - f[locPBR1]) / FO[locPBR1])
-    elif int(REN) == 1:
-        CALCCONVERSION = float(f[0])
-        for j in range(len(NU[0])):
-            THETA[j] = F[j] / F[locPBR1]
-        THETAHOLD = THETA
+
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
+        if int(REN) > 1:
+            CALCCONVERSION = float((F[0][locPBR1] - f[locPBR1]) / F[0][locPBR1])
+        elif int(REN) == 1:
+            CALCCONVERSION = float(f[0])
+        # use location of component reaction depends on to create theta values for each component
+        for i in range(len(REN)):
+            for j in range(len(NU[i])):
+                THETA[i][j] = F[i][j] / F[i][locPBR1]
+        THETAHOLD = THETA[0]
+        # create dCp list, will have potential for multi reaction problems
         dCp = []
         locPBR2 = []
         sumCP = []
-        for i in range(int(REN)):
-            if len(dCp) != int(REN):
+        for i in range(len(REN)):
+            if len(dCp) != len(REN):
                 dCp.append([0])
                 locPBR2.append([0 for col in range(len(NU[i]))])
                 sumCP.append([0])
             for j in range(len(NU[i])):
                 locPBR2[i][j] = lets.index(CCAA[i][j])
                 dCp[i][0] = dCp[i][0] + NU[i][j] * cp[locPBR2[i][j]]
-                sumCP[i][0] = sumCP[i][0] + THETA[j] * cp[locPBR2[i][j]]
+                sumCP[i][0] = sumCP[i][0] + THETA[i][j] * cp[locPBR2[i][j]]
                 if IVTT[7] != 1:
                     dHval[i] = dHval[i] + NU[i][j] * H[locPBR2[i][j]]
         # TEMPERATURE EQUATIONS FOR USE IN CALCULATION FURTHER DOWN
@@ -932,15 +972,21 @@ def PBR(f, WEIGHT):
         if TEMPCHANGETYPE[1] == 1 or TEMPCHANGETYPE[2] == 1:
             TEMPERATURE = TCHANGING
             TEMPERATURECOOLANT = TCOOLCHANGING
+        # if system has changing temperature use this method of calculating the concentration vector
+        c = [0 for col in range(len(lets))]
+        if MtypeT == 'Gas':
+            volflow = (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(ft/FTO))*(int(REN)>1) + (volflowinit * (1 / DIMPRESS) * (TEMPERATURE / TINITIAL)*(1+EPSILON[0]*f(1)))*(int(REN) == 1)
+        else:
+            volflow = volflowinit
+        sumflowcp = 0
+        for i in range(len(lets)):
+            if int(REN) == 1:
+                c[i] = CAO * (THETA[0][i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
+            else:
+                c[i] = CTO *(F[0][i]/FTO) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
+            sumflowcp = sumflowcp + c[i] * volflow * cp[i]
         SUMCP = sumCP
         DCP = dCp
-        # if system has changing temperature use this method of calculating the concentration vector
-    c = [0 for col in range(len(lets))]
-    for i in range(len(lets)):
-        if int(REN) == 1:
-            c[i] = CAO * (THETA[i] + NU[0][i] * CALCCONVERSION) * ((TINITIAL / TEMPERATURE) * DIMPRESS / (1 + EPSILON[0] * CALCCONVERSION))**(MtypeT.get() == 'Gas')
-        else:
-            c[i] = CTO * (F[i]/ft) * ((TINITIAL / TEMPERATURE) * DIMPRESS)**(MtypeT.get() == 'Gas')
 
     KVAL = [0 for row in range(int(REN))]
     KCVAL = [0 for row in range(int(REN))]
@@ -1005,16 +1051,24 @@ def PBR(f, WEIGHT):
     R2 = [0]*4
     if HxcT.get() == 'Yes':
         #hold R1 for later calculation
+        if int(REN) > 1:
+            delhmulr = 0
+            for numr in range(int(REN)):
+                delhmulr = delhmulr + (R[numr] * dHval[numr])
+        else:
+            delhmulr = 0
         if int(REN) == 1:
-            R2[0] = -R1[0] / F[0]
+            R2[0] = -R1[0] / F[0][0]
             dT = 0
             dTa = 0
             #reset a hold value for R1 for further calculation because it's easier then making new vector
         if TEMPCHANGETYPE[1] == 1:
-            dT = (R1[locPBR1] * dHval[0] - (UA/ROWB[0]) * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[locPBR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))
+            dT = ((R1[locPBR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locPBR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION)))*(int(REN)==1) +\
+                      ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp)*(int(REN)>1)
             dTa = (UA/ROWB[0]) * (TEMPERATURE - TEMPERATURECOOLANT) / (FLOWCOOLANT * CPCOOLANT)
         if TEMPCHANGETYPE[2] == 1:
-            dT = (R1[locPBR1] * dHval[0] - (UA/ROWB[0]) * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[locPBR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))
+            dT = ((R1[locPBR1] * dHval[0] - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / (F[0][locPBR1] * (sumCP[0][0] + dCp[0][0] * CALCCONVERSION))) * (int(REN) == 1) +\
+                  ((delhmulr - UA * (TEMPERATURE - TEMPERATURECOOLANT)) / sumflowcp) * (int(REN) > 1)
             dTa = (UA/ROWB[0]) * (TEMPERATURECOOLANT - TEMPERATURE) / (FLOWCOOLANT * CPCOOLANT)
     else:
         dT = 0
