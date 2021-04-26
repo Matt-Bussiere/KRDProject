@@ -262,7 +262,7 @@ def calctime():
 ##Functions for each reactor type
 # Continuous Stirred Tank Reactor
 def CSTR():
-    global Vrange,locCSTR1,F,F1F
+    global Vrange,locCSTR1,F,F1F,dHval
     RE = []
     R12 = []
     R12R = []
@@ -320,6 +320,8 @@ def CSTR():
         locCSTR2 = []
         sumCP = []
         if HxcT.get() == 'Yes':
+            if IVTT[7] != 1:
+                dHval = [0 for col in range(int(REN))]
             for i in range(len(REN)):
                 if len(dCp) != len(REN):
                     dCp.append([0])
@@ -437,7 +439,7 @@ def CSTR():
 
 # Plug Flow Reactor
 def PFR(f, VOLUME):
-    global R,SUMCP,DCP,TINITIAL,THETAHOLD,NUHOLD,KCVALHOLD,CAO
+    global R,SUMCP,DCP,TINITIAL,THETAHOLD,NUHOLD,KCVALHOLD,CAO,dHval
     RE = []
     R12 = []
     R12R = []
@@ -505,6 +507,8 @@ def PFR(f, VOLUME):
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
+        if IVTT[7] != 1:
+            dHval = [0 for col in range(int(REN))]
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
         if int(REN) > 1:
             CALCCONVERSION = float((F[0][locPFR1] - f[locPFR1]) / F[0][locPFR1])
@@ -654,7 +658,7 @@ def PFR(f, VOLUME):
 
 # Membrane Reactor
 def MR(f, VOLUME):
-    global R, SUMCP, DCP, TINITIAL, THETAHOLD, NUHOLD, KCVALHOLD, CAO
+    global R, SUMCP, DCP, TINITIAL, THETAHOLD, NUHOLD, KCVALHOLD, CAO,dHval
     RE = []
     R12 = []
     R12R = []
@@ -723,6 +727,8 @@ def MR(f, VOLUME):
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
+        if IVTT[7] != 1:
+            dHval = [0 for col in range(int(REN))]
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
         if int(REN) > 1:
             CALCCONVERSION = float((F[0][locMR1] - f[locMR1]) / F[0][locMR1])
@@ -874,7 +880,7 @@ def MR(f, VOLUME):
 
 # Packed Bed Reactor
 def PBR(f, WEIGHT):
-    global R, SUMCP, DCP, TINITIAL, THETAHOLD, NUHOLD, KCVALHOLD, CAO
+    global R, SUMCP, DCP, TINITIAL, THETAHOLD, NUHOLD, KCVALHOLD, CAO,dHval
     RE = []
     R12 = []
     R12R = []
@@ -941,6 +947,8 @@ def PBR(f, WEIGHT):
 
     TEMPERATURE = Temp[0]
     if HxcT.get() == 'Yes':
+        if IVTT[7] != 1:
+            dHval = [0 for col in range(int(REN))]
         # calculate the point of conversion we are at already this relies on A being the dependent reactant
         if int(REN) > 1:
             CALCCONVERSION = float((F[0][locPBR1] - f[locPBR1]) / F[0][locPBR1])
@@ -1545,7 +1553,7 @@ def RXNGen():
 # function to pull variables upon user completion of data input
 def cont():
     global VOLUME, Kval, Kcval, Ord, init, REN, RXNTEG, RCTTT, MFRuni, TMFRval,  COuni, CTOval, INRTval, alph, MtypeTT, INPUTPRESSURE
-    global MRCB, MRK, MRlets, CFIT, CFPT, Temp, RTKval, RTKcval, RKval, RKcval, Eval, dHval, CWR2,SCpval,VO,TEMPCHANGETYPE,HRT,CTO_R,ROWB,WEIGHT
+    global MRCB, MRK, MRlets, CFIT, CFPT, Temp, RTKval, RTKcval, RKval, RKcval,dHval, Eval, CWR2,SCpval,VO,TEMPCHANGETYPE,HRT,CTO_R,ROWB,WEIGHT
     global CFII, CCII, CFPP, CCPP, CFAA, CCAA, CFIT, CFPT, alphainp, Tinp
     RCTTT = RCTT.get()
     MtypeTT = MtypeT.get()
